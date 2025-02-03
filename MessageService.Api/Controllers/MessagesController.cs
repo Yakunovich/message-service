@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MessageService.Api.Models;
 using MessageService.Api.Repositories;
+using MessageService.Api.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace MessageService.Api.Controllers
 {
@@ -10,11 +12,16 @@ namespace MessageService.Api.Controllers
     {
         private readonly ILogger<MessagesController> _logger;
         private readonly IMessageRepository _repository;
+        private readonly IHubContext<MessageHub> _hubContext;
 
-        public MessagesController(ILogger<MessagesController> logger, IMessageRepository repository)
+        public MessagesController(
+            ILogger<MessagesController> logger, 
+            IMessageRepository repository,
+            IHubContext<MessageHub> hubContext)
         {
             _logger = logger;
             _repository = repository;
+            _hubContext = hubContext;
         }
 
         [HttpPost]
@@ -25,6 +32,10 @@ namespace MessageService.Api.Controllers
                 _logger.LogInformation("Creating new message with OrderNum: {OrderNum}", message.OrderNum);
                 message.Timestamp = DateTime.UtcNow;
                 var result = await _repository.CreateMessageAsync(message);
+                
+                // Отправляем уведомление всем подключенным клиентам
+                await _hubContext.Clients.All.SendAsync("ReceiveMessage", result);
+                
                 return Ok(result);
             }
             catch (Exception ex)

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Message Service Test</title>
+</head>
+<body>
+    <div>
+        <h3>Send Message</h3>
+        <input type="text" id="messageText" placeholder="Enter message">
+        <input type="number" id="orderNum" placeholder="Order number">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <div>
+        <h3>Received Messages</h3>
+        <ul id="messagesList"></ul>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/messageHub")
+            .build();
+
+        connection.on("ReceiveMessage", function (message) {
+            const li = document.createElement("li");
+            li.textContent = `${message.orderNum}: ${message.text} (${new Date(message.timestamp).toLocaleString()})`;
+            document.getElementById("messagesList").appendChild(li);
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        async function sendMessage() {
+            const text = document.getElementById("messageText").value;
+            const orderNum = parseInt(document.getElementById("orderNum").value);
+
+            try {
+                await fetch('/api/Messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        orderNum: orderNum
+                    })
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html> 

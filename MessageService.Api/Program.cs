@@ -1,4 +1,5 @@
 using MessageService.Api.Repositories;
+using MessageService.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,8 +7,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSignalR();
 
 builder.Services.AddScoped<IMessageRepository, PostgresMessageRepository>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ClientPermission", policy =>
+    {
+        policy
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .WithOrigins("http://localhost:3000")
+            .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 
@@ -20,8 +34,12 @@ if (app.Environment.IsDevelopment())
 
 // app.UseHttpsRedirection();
 
+app.UseRouting();
+app.UseCors("ClientPermission");
 app.UseAuthorization();
+app.UseStaticFiles();
 
 app.MapControllers();
+app.MapHub<MessageHub>("/messageHub");
 
 app.Run(); 
