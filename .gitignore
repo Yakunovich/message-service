@@ -1,0 +1,10 @@
+## .NET Core
+bin/
+obj/
+.vs/
+*.user
+*.userosscache
+*.suo
+*.dbmdl
+*.jfm
+*.log 
