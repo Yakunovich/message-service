@@ -29,18 +29,32 @@ namespace MessageService.Api.Controllers
         {
             try
             {
-                _logger.LogInformation("Creating new message with OrderNum: {OrderNum}", message.OrderNum);
+                _logger.LogInformation(
+                    "Creating message. OrderNum: {OrderNum}, Text: {Text}", 
+                    message.OrderNum, 
+                    message.Text
+                );
+                
                 message.Timestamp = DateTime.UtcNow;
                 var result = await _repository.CreateMessageAsync(message);
                 
-                // Отправляем уведомление всем подключенным клиентам
-                await _hubContext.Clients.All.SendAsync("ReceiveMessage", result);
+                _logger.LogInformation(
+                    "Message created successfully. Id: {Id}, OrderNum: {OrderNum}", 
+                    result.Id, 
+                    result.OrderNum
+                );
                 
+                await _hubContext.Clients.All.SendAsync("ReceiveMessage", result);
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating message");
+                _logger.LogError(
+                    ex,
+                    "Error creating message. OrderNum: {OrderNum}, Text: {Text}",
+                    message.OrderNum,
+                    message.Text
+                );
                 return StatusCode(500, "Internal server error");
             }
         }

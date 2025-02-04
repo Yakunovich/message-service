@@ -1,7 +1,16 @@
 using MessageService.Api.Repositories;
 using MessageService.Api.Hubs;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Настройка Serilog
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/message-service-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddControllers();
