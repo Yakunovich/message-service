@@ -11,8 +11,9 @@ export const MessageSender: React.FC = () => {
 
     const handleSubmit = async () => {
         try {
+            const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
             const orderNum = isAutoNumber ? currentOrderNum : parseInt(manualOrderNum);
-            await fetch('http://localhost:5000/api/Messages', {
+            await fetch(`${apiUrl}/api/Messages`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

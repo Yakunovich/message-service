@@ -13,8 +13,9 @@ export const MessageViewer: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
 
     useEffect(() => {
+        const wsUrl = process.env.REACT_APP_WEBSOCKET_URL || 'ws://localhost:5000';
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl('http://localhost:5000/messageHub')
+            .withUrl(`${wsUrl}/messageHub`)
             .withAutomaticReconnect()
             .build();
 
